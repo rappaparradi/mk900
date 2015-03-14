@@ -1,12 +1,20 @@
-package com.rappaparradi.mk900;
+package mk900;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Random;
+
+import javax.swing.JOptionPane;
+
+import entities.Setting;
+import mk900.Main;
+import models.SettingsModel;
 
 public class Mk900 {
 
@@ -16,7 +24,7 @@ public class Mk900 {
 
 	public StringBuilder status_str = new StringBuilder();
 
-	public static String SettingsFilePath = "/Settings.txt";
+	public static String SettingsFilePath = "\\settings.txt";
 
 	public Boolean flag_H, /* {признак "большой"/"малой" выборки } */
 	flag_L, /* {признак "малой" выборки } */
@@ -176,7 +184,7 @@ public class Mk900 {
 
 	public void main() {
 
-		
+
 		status_str
 				.append("--------------- Исходные данные -----------------\n");
 		status_str.append("V     =" + v + ": скорость комбайна [м/с]\n");
@@ -843,6 +851,68 @@ public class Mk900 {
 		return "";
 
 	}
+	
+	public void SetSettingByName_FromFile(String Name_par,String value_par)
+			throws FileNotFoundException {
+		BufferedWriter writer;
+		StringBuilder sb = new StringBuilder();
+
+		File rfile = new File("C:\\Users\\radin\\git\\mk900_src\\mk900"
+				+ this.SettingsFilePath);
+		if (!rfile.exists()) {
+			throw new FileNotFoundException(rfile.getName());
+		}
+
+		try {
+			File wfile = new File("C:\\Users\\radin\\git\\mk900_src\\mk900\\f_buffer.txt");
+			wfile.createNewFile();
+
+		    writer = new BufferedWriter(new FileWriter(wfile));
+
+		   
+			// Объект для чтения файла в буфер
+			BufferedReader in = new BufferedReader(new FileReader(
+					rfile.getAbsoluteFile()));
+			try {
+				// В цикле построчно считываем файл
+				String s;
+				while ((s = in.readLine()) != null) {
+					int p1, p2;
+					if (s.contains("[" + Name_par + "]")) {
+
+						p1 = s.indexOf("=");
+						writer.write(s.substring(0, p1+1) + value_par + ";");
+						writer.newLine();
+
+					} else {
+						writer.write(s);
+						writer.newLine();
+					}
+
+				}
+				
+				rfile.delete();
+				
+				
+			} finally {
+				// Также не забываем закрыть файл
+				in.close();
+				
+				
+				writer.flush();
+				writer.close();
+				
+				wfile.renameTo(new File("C:\\Users\\radin\\git\\mk900_src\\mk900"
+						+ this.SettingsFilePath));
+				
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		
+
+	}
 
 	public String GetSettingByName(String Name_par) {
 
@@ -850,13 +920,39 @@ public class Mk900 {
 
 		try {
 
-			rez = GetSettingByName_FromFile(Name_par);
+			//rez = GetSettingByName_FromFile(Name_par);
+			SettingsModel sm = new SettingsModel();
+			Setting set_obj = sm.find(Name_par);
+			if (set_obj!=null){
+				
+				rez = set_obj.getValue();
+				
+			} else throw new IOException();
+					
+			
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Не задано значение параметра " + Name_par + " !!!");
 			status_str.append(e + "\n");
 			throw new RuntimeException(e);
 		}
 
 		return rez;
+
+	}
+	
+	public void SetSettingByName(String Name_par, String value_par) {
+
+		String rez = "";
+
+		try {
+
+			SetSettingByName_FromFile(Name_par, value_par);
+		} catch (IOException e) {
+			status_str.append(e + "\n");
+			throw new RuntimeException(e);
+		}
+
+		
 
 	}
 
