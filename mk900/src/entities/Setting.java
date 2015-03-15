@@ -6,7 +6,14 @@ public class Setting {
 	String value;
 	String desc;
 	int sort_ind;
+	int exp_id;
 	
+	public int getExp_id() {
+		return exp_id;
+	}
+	public void setExp_id(int exp_id) {
+		this.exp_id = exp_id;
+	}
 	public int getSort_ind() {
 		return sort_ind;
 	}
@@ -27,6 +34,7 @@ public class Setting {
 		this.name = name;
 		this.value = value;
 		this.desc = desc;
+		this.desc = desc;
 	}
 	public Setting(String name, String value, String desc, int sort_ind) {
 		super();
@@ -34,6 +42,15 @@ public class Setting {
 		this.value = value;
 		this.desc = desc;
 		this.sort_ind = sort_ind;
+		this.exp_id = 0;
+	}
+	public Setting(String name, String value, String desc, int sort_ind, int exp_id) {
+		super();
+		this.name = name;
+		this.value = value;
+		this.desc = desc;
+		this.sort_ind = sort_ind;
+		this.exp_id = exp_id;
 	}
 	public Setting() {
 		super();

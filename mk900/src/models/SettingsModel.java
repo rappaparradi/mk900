@@ -15,7 +15,30 @@ public class SettingsModel {
 		try { 
 			
 			List<Setting> settings_list = new ArrayList<>();	
-			PreparedStatement ps = Main.c.prepareStatement("select * from settings order by sort_ind");
+			PreparedStatement ps = Main.c.prepareStatement("select * from settings where exp_id = 0 or exp_id is NULL order by sort_ind");
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {				
+				Setting setting_var = new Setting(rs.getString("name"), rs.getString("value"), rs.getString("desc"));
+				settings_list.add(setting_var);
+			}
+			
+			return settings_list;
+		
+			
+		} catch (Exception e) {
+			System.out.println( e.getClass().getName() + ": " + e.getMessage() );
+			return null;
+		}
+		
+	}
+	
+public List<Setting> findAll(int exp_id){
+		
+		try { 
+			
+			List<Setting> settings_list = new ArrayList<>();	
+			PreparedStatement ps = Main.c.prepareStatement("select * from settings where exp_id=?");
+			ps.setInt(1, exp_id);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {				
 				Setting setting_var = new Setting(rs.getString("name"), rs.getString("value"), rs.getString("desc"));
@@ -50,8 +73,8 @@ public Setting find(String name_par){
 				setting_var = new Setting();
 				setting_var.setName(rs.getString("name"));
 				setting_var.setValue(rs.getString("value"));
-				setting_var.setDesc(rs.getString("desc"));
-				
+				setting_var.setDesc(rs.getString("desc")); 
+				setting_var.setExp_id(rs.getInt("exp_id"));
 				
 			}
 			
@@ -64,13 +87,43 @@ public Setting find(String name_par){
 		
 	}
 
+public Setting find(String name_par, int exp_id){
+	
+	try { 
+		
+		Setting setting_var = null;		
+		PreparedStatement ps = Main.c.prepareStatement("select * from settings where name=? and exp_id=?");
+		ps.setString(1, name_par);
+		ps.setInt(2, exp_id);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			
+			setting_var = new Setting();
+			setting_var.setName(rs.getString("name"));
+			setting_var.setValue(rs.getString("value"));
+			setting_var.setDesc(rs.getString("desc")); 
+			setting_var.setExp_id(rs.getInt("exp_id"));
+			setting_var.setSort_ind(rs.getInt("sort_ind"));
+			
+		}
+		
+		return setting_var;
+	
+		
+	} catch (Exception e) {
+		return null;
+	}
+	
+}
+
 public boolean create(Setting setting_par){
 	
 	try {
-		PreparedStatement ps = Main.c.prepareStatement("insert into settings(name, value, desc) values (?,?,?)");
+		PreparedStatement ps = Main.c.prepareStatement("insert into settings(name, value, desc, exp_id) values (?,?,?,?)");
 		ps.setString(1, setting_par.getName());
 		ps.setString(2, setting_par.getValue());
 		ps.setString(3, setting_par.getDesc());
+		ps.setInt(4, setting_par.getExp_id());
 		
 		return ps.executeUpdate() > 0;
 		
@@ -83,10 +136,11 @@ public boolean create(Setting setting_par){
 public boolean edit(Setting setting_par){
 	
 	try {
-		PreparedStatement ps = Main.c.prepareStatement("update settings set value=?, desc=? where name=?");
+		PreparedStatement ps = Main.c.prepareStatement("update settings set value=?, desc=? where name=? and exp_id=?");
 		ps.setString(1, setting_par.getValue());
 		ps.setString(2, setting_par.getDesc());
 		ps.setString(3, setting_par.getName());
+		ps.setInt(4, setting_par.getExp_id());
 		
 		return ps.executeUpdate() > 0;
 		
